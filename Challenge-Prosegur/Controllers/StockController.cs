@@ -57,7 +57,7 @@ namespace Challenge_Prosegur.Controllers
                     }
                 }
 
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync();
 
                 return Ok(new { message = "Stock consumido" });
             }
@@ -81,7 +81,7 @@ namespace Challenge_Prosegur.Controllers
                     return Conflict(new { message = "Material no encontrado." });
 
                 material.Disponible += cantidad;
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync();
 
                 return Ok(new { message = "Stock aumentado en " + cantidad });
             }

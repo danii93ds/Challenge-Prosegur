@@ -27,7 +27,7 @@ namespace Challenge_Prosegur.Controllers
                 };
 
                 dbContext.Productos.Add(producto);
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync();
 
                 return Ok(new { message = "Producto creado" });
             }
@@ -54,7 +54,7 @@ namespace Challenge_Prosegur.Controllers
                     return Conflict(new { message = "Usuario no encontrado." });
 
                 producto.Baja = true;
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync();
 
                 return Ok(new { message = "Producto eliminado" });
             }

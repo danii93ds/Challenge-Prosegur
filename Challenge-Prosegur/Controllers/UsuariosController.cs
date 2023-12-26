@@ -30,7 +30,7 @@ namespace Challenge_Prosegur.Controllers
                 };
 
                 dbContext.Usuarios.Add(usuario);
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync();
 
                 return Ok(new { message = "Usuario creado" });
             }
@@ -56,7 +56,7 @@ namespace Challenge_Prosegur.Controllers
                 usuario.Nombre = nombre;
                 usuario.DNI = dni;
                 usuario.RolesID = rolesID;
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync();
 
                 return Ok(new { message = "Usuario modificado" });
             }
@@ -74,7 +74,7 @@ namespace Challenge_Prosegur.Controllers
                 Usuarios usuario = dbContext.Usuarios.Find(id);
 
                 usuario.Baja = true;
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync();
 
                 return Ok(new { message = "Usuario eliminado" });
             }

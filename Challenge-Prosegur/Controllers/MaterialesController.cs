@@ -24,7 +24,7 @@ namespace Challenge_Prosegur.Controllers
             };
 
             dbContext.Materiales.Add(material);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
             return Ok(new { message = "Material creado" });
         }
@@ -41,7 +41,7 @@ namespace Challenge_Prosegur.Controllers
             var material = dbContext.Materiales.Find(MaterialesID);
 
             material.Baja = true;
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
             return Ok(new { message = "Material eliminado" });
         }

@@ -15,7 +15,7 @@ namespace Challenge_Prosegur.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Crear(Guid usuariosID, List<OrdenesProductos> productos)
+        public ActionResult Crear(Guid usuariosID, List<OrdenesProductos> productos)
         {
             try
             {
@@ -65,7 +65,7 @@ namespace Challenge_Prosegur.Controllers
             {
                 var orden = dbContext.OrdenesProductos.Where(op => op.OrdenesID == ordenesID && op.ProductosID == productosID).First();
                 orden.UsuariosID = usuariosID;
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync();
 
                 return Ok(new { message = "Orden consultada" });
             }

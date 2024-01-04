@@ -1,15 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Challenge_Prosegur.Entities
+﻿namespace Challenge_Prosegur.Models
 {
-    public class Stock
+    public class StockModel
     {
-        [Required]
         public Guid ID { get; set; }
         public int Disponible { get; set; }
         public Guid MaterialesID { get; set; }
         public Guid SucursalesID { get; set; }
         public decimal PrecioUnitario { get; set; }
-        public bool Baja { get; set; }
+        public decimal PrecioFinal { get; set; }
     }
 }

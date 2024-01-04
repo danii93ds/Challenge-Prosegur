@@ -1,4 +1,6 @@
 using Challenge_Prosegur.Entities;
+using Challenge_Prosegur.Models;
+using Challenge_Prosegur.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Data.Entity;
 
@@ -8,33 +10,18 @@ namespace Challenge_Prosegur.Controllers
     [Route("[controller]")]
     public class OrdenesController : ControllerBase
     {
-        private readonly CafeteriaContext dbContext;
-        public OrdenesController(CafeteriaContext context)
+        private IOrdenesService OrdenesService;
+        public OrdenesController(IOrdenesService ordenesService)
         {
-            this.dbContext = context;
+            this.OrdenesService = ordenesService;
         }
 
         [HttpPost]
-        public ActionResult Crear(Guid usuariosID, List<OrdenesProductos> productos)
+        public ActionResult Crear(OrdenesModel ordenModel)
         {
             try
             {
-                Ordenes orden = new Ordenes()
-                {
-                    ID = Guid.NewGuid(),
-                    UsuariosID = usuariosID,
-                    Baja = false
-                };
-
-                dbContext.Ordenes.Add(orden);
-
-                foreach (var item in productos)
-                {
-                    item.OrdenesID = orden.ID;
-                    dbContext.OrdenesProductos.Add(item);
-                }
-
-                dbContext.SaveChanges();
+                OrdenesService.Crear(ordenModel);
 
                 return Ok(new { message = "Orden creada" });
             }
@@ -45,29 +32,23 @@ namespace Challenge_Prosegur.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Ordenes>> Consultar(Guid usuariosID)
+        public async Task<IEnumerable<OrdenesModel>> Consultar()
         {
-            var orden = from o in dbContext.Ordenes
-                            join op in dbContext.OrdenesProductos
-                                on o.ID equals op.OrdenesID
-                            where
-                                op.UsuariosID == usuariosID
-                                && o.Baja == false
-                            select o;
-
-            return await ((DbSet<Ordenes>)orden).ToListAsync();
+            return await OrdenesService.GetOrdenes();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Preparar(Guid ordenesID, Guid productosID, Guid usuariosID)
+        public async Task<IActionResult> Preparar(TrabajosModel trabajosModel)
         {
             try
             {
-                var orden = dbContext.OrdenesProductos.Where(op => op.OrdenesID == ordenesID && op.ProductosID == productosID).First();
-                orden.UsuariosID = usuariosID;
-                await dbContext.SaveChangesAsync();
+                await OrdenesService.Preparar(trabajosModel);
 
                 return Ok(new { message = "Orden consultada" });
+            }
+            catch (KeyNotFoundException kex)
+            {
+                return BadRequest(new { message = kex.Message });
             }
             catch (Exception ex)
             {

@@ -17,16 +17,23 @@ namespace Challenge_Prosegur.Controllers
         [HttpPost]
         public async Task<IActionResult> Crear(string nombre)
         {
-            Materiales material = new Materiales()
+            try
             {
-                ID = Guid.NewGuid(),
-                Material = nombre
-            };
+                Materiales material = new Materiales()
+                {
+                    ID = Guid.NewGuid(),
+                    Material = nombre
+                };
 
-            dbContext.Materiales.Add(material);
-            await dbContext.SaveChangesAsync();
+                dbContext.Materiales.Add(material);
+                await dbContext.SaveChangesAsync();
 
-            return Ok(new { message = "Material creado" });
+                return Ok(new { message = "Material creado" });
+            }
+            catch (Exception ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
         }
 
         [HttpGet]

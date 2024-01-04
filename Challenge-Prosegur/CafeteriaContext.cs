@@ -1,18 +1,17 @@
-﻿using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using Challenge_Prosegur.Entities;
+﻿using Challenge_Prosegur.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Challenge_Prosegur
 {
     public class CafeteriaContext : DbContext
     {
-        public CafeteriaContext() : base(nameof(CafeteriaContext))
-        {
-            Database.Connection.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings[nameof(CafeteriaContext)].ConnectionString;
+        //public CafeteriaContext() : base(nameof(CafeteriaContext))
+        //{
+        //    //Database.Connection.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings[nameof(CafeteriaContext)].ConnectionString;
 
-            var objectContext = (this as IObjectContextAdapter).ObjectContext;
-            objectContext.CommandTimeout = 1000;
-        }
+        //    //var objectContext = (this as IObjectContextAdapter).ObjectContext;
+        //    //objectContext.CommandTimeout = 1000;
+        //}
 
         public DbSet<Usuarios> Usuarios { get; set; }
         public DbSet<Roles> Roles { get; set; }
@@ -25,5 +24,10 @@ namespace Challenge_Prosegur
         public DbSet<Impuestos> Impuestos { get; set; }
         public DbSet<Ordenes> Ordenes { get; set; }
         public DbSet<OrdenesProductos> OrdenesProductos { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder options)
+        {
+            options.UseInMemoryDatabase(databaseName: "ChallengeDB");
+        }
     }
 }

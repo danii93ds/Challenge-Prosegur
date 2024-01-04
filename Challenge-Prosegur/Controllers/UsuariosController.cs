@@ -1,4 +1,6 @@
 using Challenge_Prosegur.Entities;
+using Challenge_Prosegur.Models;
+using Challenge_Prosegur.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Data.Entity;
 
@@ -8,29 +10,18 @@ namespace Challenge_Prosegur.Controllers
     [Route("[controller]")]
     public class UsuariosController : ControllerBase
     {
-        private readonly CafeteriaContext dbContext;
-        public UsuariosController(CafeteriaContext context)
+        private IUsuariosService usuariosService;
+        public UsuariosController(IUsuariosService servicio)
         {
-            this.dbContext = context;
+            this.usuariosService = servicio;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Crear(string apellido, string nombre, string dni, Guid rolesID)
+        public async Task<IActionResult> Crear(UsuariosModel usuariosModel)
         {
             try
             {
-                Usuarios usuario = new Usuarios()
-                {
-                    ID = Guid.NewGuid(),
-                    Apellido = apellido,
-                    Nombre = nombre,
-                    DNI = dni,
-                    RolesID = rolesID,
-                    Baja = false
-                };
-
-                dbContext.Usuarios.Add(usuario);
-                await dbContext.SaveChangesAsync();
+                await usuariosService.Crear(usuariosModel);
 
                 return Ok(new { message = "Usuario creado" });
             }
@@ -41,24 +32,17 @@ namespace Challenge_Prosegur.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Modificar(Guid id, string apellido, string nombre, string dni, Guid rolesID)
+        public async Task<IActionResult> Modificar(UsuariosModel usuariosModel)
         {
             try
             {
-                if (id == Guid.Empty)
-                    return BadRequest(new { message = "ID no puede ser vacio." });
-
-                Usuarios usuario = dbContext.Usuarios.Find(id);
-                if (usuario == null)
-                    return Conflict(new { message = "Usuario no encontrado." });
-
-                usuario.Apellido = apellido;
-                usuario.Nombre = nombre;
-                usuario.DNI = dni;
-                usuario.RolesID = rolesID;
-                await dbContext.SaveChangesAsync();
+                await usuariosService.Modificar(usuariosModel);
 
                 return Ok(new { message = "Usuario modificado" });
+            }
+            catch (KeyNotFoundException kex)
+            {
+                return BadRequest(new { message = kex.Message });
             }
             catch (Exception ex)
             {
@@ -71,12 +55,13 @@ namespace Challenge_Prosegur.Controllers
         {
             try
             {
-                Usuarios usuario = dbContext.Usuarios.Find(id);
-
-                usuario.Baja = true;
-                await dbContext.SaveChangesAsync();
+                await usuariosService.Eliminar(id);
 
                 return Ok(new { message = "Usuario eliminado" });
+            }
+            catch (KeyNotFoundException kex)
+            {
+                return BadRequest(new { message = kex.Message });
             }
             catch (Exception ex)
             {
@@ -85,7 +70,7 @@ namespace Challenge_Prosegur.Controllers
         }
         public async Task<IEnumerable<Usuarios>> Consultar()
         {
-            return await dbContext.Usuarios.Where(u => u.Baja == false).ToListAsync();
+            return await usuariosService.GetUsuarios();
         }
     }
 }

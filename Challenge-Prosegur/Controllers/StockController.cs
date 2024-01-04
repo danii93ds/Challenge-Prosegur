@@ -1,4 +1,6 @@
 using Challenge_Prosegur.Entities;
+using Challenge_Prosegur.Models;
+using Challenge_Prosegur.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Data.Entity;
 
@@ -8,33 +10,22 @@ namespace Challenge_Prosegur.Controllers
     [Route("[controller]")]
     public class StockController : ControllerBase
     {
-        private readonly CafeteriaContext dbContext;
-        public StockController(CafeteriaContext context)
+        private IStockService StockService;
+        public StockController(IStockService service)
         {
-            this.dbContext = context;
+            this.StockService = service;
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Stock>> Consultar()
+        public async Task<IEnumerable<StockModel>> Consultar()
         {
-            return await dbContext.Stock.Where(s => s.Baja == false).ToListAsync();
+            return await StockService.Consultar();
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Productos>> Productos(Guid sucursalesID)
+        public async Task<IEnumerable<ProductosModel>> Productos(Guid sucursalesID)
         {
-            var productos = from p in dbContext.Productos
-                            join pm in dbContext.ProductosMateriales
-                                on p.ID equals pm.ProductosID
-                            join s in dbContext.Stock
-                                on pm.MaterialesID equals s.MaterialesID
-                            where
-                                pm.Cantidad >= s.Disponible
-                                && s.SucursalesID == sucursalesID
-                                && p.Baja == false
-                            select p;
-
-            return await ((DbSet<Productos>)productos).ToListAsync();
+            return await StockService.GetProductosDisponibles(sucursalesID);
         }
 
         [HttpPost]
@@ -42,22 +33,7 @@ namespace Challenge_Prosegur.Controllers
         {
             try
             {
-                List<ProductosMateriales> consumos = dbContext.ProductosMateriales.Where(c => c.ProductosID == productosID).ToList();
-
-                foreach (ProductosMateriales item in consumos)
-                {
-                    var stockItem = dbContext.Stock.Where(c => c.MaterialesID == item.MaterialesID).First();
-
-                    if (stockItem != null)
-                    {
-                        if (stockItem.Disponible >= item.Cantidad)
-                            stockItem.Disponible -= item.Cantidad;
-                        else
-                            return Conflict(new { message = "No hay suficiente stock." });
-                    }
-                }
-
-                await dbContext.SaveChangesAsync();
+                await StockService.Consumir(productosID);
 
                 return Ok(new { message = "Stock consumido" });
             }
@@ -72,16 +48,7 @@ namespace Challenge_Prosegur.Controllers
         {
             try
             {
-                if (materialesID == Guid.Empty)
-                    return BadRequest(new { message = "MaterialesID no puede ser vacio." });
-
-                var material = dbContext.Stock.Where(s => s.MaterialesID == materialesID).First();
-
-                if (material == null)
-                    return Conflict(new { message = "Material no encontrado." });
-
-                material.Disponible += cantidad;
-                await dbContext.SaveChangesAsync();
+                await StockService.Llenar(materialesID, cantidad);
 
                 return Ok(new { message = "Stock aumentado en " + cantidad });
             }
